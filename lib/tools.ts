@@ -43,6 +43,8 @@ export interface Tool {
   isImageTool?: boolean;
   /** if true, this tool renders its own standalone UI */
   isEmbeddedTool?: boolean;
+  /** if true, renders the dedicated image upscaler */
+  isUpscaleTool?: boolean;
 }
 
 export const CATEGORIES: Category[] = [
@@ -601,6 +603,18 @@ export const TOOLS: Tool[] = [
     ],
     instruction: "Generate an image based on the description below.",
     system: "You generate images. Use the prompt and style as provided.",
+  },
+  {
+    slug: "qwen-image-upscaler",
+    category: "design",
+    name: "Qwen Image Upscaler",
+    blurb: "Restore detail and enlarge an image with the Qwen Image Edit 2509 upscaling LoRA.",
+    isUpscaleTool: true,
+    isNew: true,
+    fields: [],
+    instruction: "Upscale this picture to 4K resolution.",
+    system: "",
+    resource: { label: "Model card · Apache 2.0", href: "https://huggingface.co/joyfox/Qwen-Image-Edit-2509-Upscale2K" },
   },
   {
     slug: "background-remover",
