@@ -169,12 +169,6 @@ export default function ImageToolRunner({ tool }: { tool: Tool }) {
         {/* top bar */}
         <div className="flex items-center justify-between border-b border-[var(--border)] bg-black/[0.03] px-5 py-2.5">
           <span className="text-xs font-semibold text-[var(--muted)]">{tool.name}</span>
-          <div className="flex items-center gap-2">
-            <span className="rounded bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-600 ring-1 ring-amber-100">
-              New
-            </span>
-            <span className="text-[10px] text-[var(--faint)]">Qwen Image 2.1 · free</span>
-          </div>
         </div>
 
         <div className="p-5 sm:p-6">
@@ -366,9 +360,6 @@ export default function ImageToolRunner({ tool }: { tool: Tool }) {
             </p>
           )}
 
-          <p className="mt-4 text-xs text-[var(--faint)]">
-            Free via public Hugging Face Space · Availability may vary · Personal testing only
-          </p>
         </div>
       </div>
 
