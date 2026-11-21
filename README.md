@@ -28,17 +28,7 @@ Get an API key at https://platform.claude.com.
 
 ### Background Remover
 
-The Background Remover tool uses the open-source [nadermx/backgroundremover](https://github.com/nadermx/backgroundremover) Python CLI. Install it in the same environment used by the Next.js server, along with PyTorch and FFmpeg:
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-python -m pip install backgroundremover
-```
-
-Install FFmpeg with your operating system package manager. Start Next.js with `.venv` active, or set `PYTHON_BIN` to the full path of `.venv/bin/python` so the API route can find the package. The first image may take longer while BackgroundRemover downloads its model. This CPU setup is suitable for local use; production deployments need a server with Python, FFmpeg, sufficient memory, and enough request time for model inference.
+The Background Remover uses WaveSpeed's image-background-remover endpoint, so it works on the Node.js deployment without a local Python/PyTorch runtime. Set `WAVESPEED_API_KEY` in the server environment. Each request may incur WaveSpeed usage charges.
 
 ### Model
 

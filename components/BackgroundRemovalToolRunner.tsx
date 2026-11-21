@@ -63,7 +63,7 @@ export default function BackgroundRemovalToolRunner() {
         </button>
         {loading && <p className="mt-3 text-sm text-[var(--muted)]">The first run may take longer while the AI model downloads.</p>}
         {error && <p role="alert" className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 ring-1 ring-rose-100">{error}</p>}
-        <p className="mt-4 text-xs text-[var(--faint)]">Runs the open-source BackgroundRemover model on the server. Requires Python dependencies; see README setup.</p>
+        <p className="mt-4 text-xs text-[var(--faint)]">Processing uses WaveSpeed and may incur provider charges. Configure WAVESPEED_API_KEY on the server.</p>
       </section>
       <section className="card flex min-h-80 flex-col p-5 sm:p-6">
         <div className="mb-3 flex items-center justify-between"><p className="eyebrow">Transparent result</p>{result && <a href={result} download="background-removed.png" className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-strong)] px-3 py-1.5 text-xs font-medium"><Download className="h-3.5 w-3.5" /> Download PNG</a>}</div>

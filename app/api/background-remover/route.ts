@@ -1,43 +1,62 @@
-import { execFile } from "node:child_process";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { existsSync } from "node:fs";
-import { tmpdir } from "node:os";
-import path from "node:path";
-import { promisify } from "node:util";
-
 export const runtime = "nodejs";
-export const maxDuration = 300;
+export const maxDuration = 180;
 
-const execFileAsync = promisify(execFile);
+const API = "https://api.wavespeed.ai/api/v3";
 
 export async function POST(req: Request) {
+  const apiKey = process.env.WAVESPEED_API_KEY;
+  if (!apiKey) return Response.json({ error: "Background removal is not configured. Add WAVESPEED_API_KEY to the server environment." }, { status: 503 });
+
   let body: { image?: unknown };
   try { body = await req.json(); } catch { return Response.json({ error: "Invalid request body." }, { status: 400 }); }
-
-  const match = String(body.image || "").match(/^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/=\r\n]+)$/);
+  const image = String(body.image || "");
+  const match = image.match(/^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/=\r\n]+)$/);
   if (!match) return Response.json({ error: "Upload a PNG, JPEG, or WebP image." }, { status: 400 });
-  const input = Buffer.from(match[2], "base64");
-  if (!input.length || input.length > 10 * 1024 * 1024) return Response.json({ error: "Keep the image under 10 MB." }, { status: 413 });
+  const bytes = Buffer.from(match[2], "base64");
+  if (!bytes.length || bytes.length > 10 * 1024 * 1024) return Response.json({ error: "Keep the image under 10 MB." }, { status: 413 });
 
-  const workDir = await mkdtemp(path.join(tmpdir(), "background-remover-"));
-  const inputPath = path.join(workDir, match[1] === "image/png" ? "input.png" : match[1] === "image/webp" ? "input.webp" : "input.jpg");
-  const outputPath = path.join(workDir, "output.png");
   try {
-    await writeFile(inputPath, input);
-    const projectPython = path.resolve(process.cwd(), ".venv", "bin", "python");
-    const python = process.env.PYTHON_BIN || (existsSync(projectPython) ? projectPython : "python3");
-    await execFileAsync(python, ["-m", "backgroundremover.cmd.cli", "-i", inputPath, "-o", outputPath], { timeout: 270_000, maxBuffer: 2 * 1024 * 1024 });
-    const output = await readFile(outputPath);
-    if (!output.length || output.length > 25 * 1024 * 1024) return Response.json({ error: "The processed image is empty or too large." }, { status: 502 });
-    return Response.json({ image: `data:image/png;base64,${output.toString("base64")}` });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    if (message.includes("ENOENT") || message.includes("No module named 'backgroundremover'")) {
-      return Response.json({ error: "BackgroundRemover is not installed. Follow the Python setup steps in README.md." }, { status: 503 });
+    const submit = await fetch(`${API}/wavespeed-ai/image-background-remover`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ image }),
+      signal: AbortSignal.timeout(30_000),
+    });
+    const submitBody = await submit.json().catch(() => ({}));
+    if (!submit.ok) return Response.json({ error: submitBody?.message || submitBody?.error || "WaveSpeed could not accept this image." }, { status: 502 });
+    const task = submitBody.data ?? submitBody;
+    if (!task.id) return Response.json({ error: "WaveSpeed returned no job ID." }, { status: 502 });
+
+    const deadline = Date.now() + 150_000;
+    while (Date.now() < deadline) {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const poll = await fetch(`${API}/predictions/${encodeURIComponent(task.id)}/result`, {
+        headers: { Authorization: `Bearer ${apiKey}` },
+        signal: AbortSignal.timeout(15_000),
+      });
+      const pollBody = await poll.json().catch(() => ({}));
+      if (!poll.ok) return Response.json({ error: "Could not retrieve the WaveSpeed result." }, { status: 502 });
+      const result = pollBody.data ?? pollBody;
+      if (result.status === "completed") {
+        const outputUrl = result.outputs?.[0];
+        if (typeof outputUrl !== "string") return Response.json({ error: "WaveSpeed returned no processed image." }, { status: 502 });
+        let parsed: URL;
+        try { parsed = new URL(outputUrl); } catch { return Response.json({ error: "WaveSpeed returned an invalid image URL." }, { status: 502 }); }
+        if (parsed.protocol !== "https:") return Response.json({ error: "WaveSpeed returned an invalid image URL." }, { status: 502 });
+        const output = await fetch(parsed, { signal: AbortSignal.timeout(30_000) });
+        const type = output.headers.get("content-type") || "image/png";
+        const resultBytes = Buffer.from(await output.arrayBuffer());
+        if (!output.ok || !/^image\/(png|jpeg|webp)$/.test(type) || resultBytes.length > 25 * 1024 * 1024) {
+          return Response.json({ error: "Could not download the processed PNG." }, { status: 502 });
+        }
+        return Response.json({ image: `data:${type};base64,${resultBytes.toString("base64")}` });
+      }
+      if (["failed", "cancelled", "timeout", "deleted"].includes(result.status)) {
+        return Response.json({ error: result.error || "WaveSpeed could not remove this background." }, { status: 502 });
+      }
     }
-    if (message.includes("timed out")) return Response.json({ error: "Processing timed out. Try a smaller image or use a machine with GPU support." }, { status: 504 });
-    return Response.json({ error: "Could not process this image. Check that BackgroundRemover, PyTorch, and FFmpeg are installed on the server." }, { status: 502 });
-  } finally {
-    await rm(workDir, { recursive: true, force: true });
+    return Response.json({ error: "Background removal timed out. Please try again." }, { status: 504 });
+  } catch {
+    return Response.json({ error: "WaveSpeed is unavailable right now. Please try again." }, { status: 503 });
   }
 }
