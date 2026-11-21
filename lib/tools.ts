@@ -47,6 +47,8 @@ export interface Tool {
   isEmbeddedTool?: boolean;
   /** if true, renders the dedicated image upscaler */
   isUpscaleTool?: boolean;
+  /** if true, renders the local BackgroundRemover integration */
+  isBackgroundRemovalTool?: boolean;
 }
 
 export const CATEGORIES: Category[] = [
@@ -621,12 +623,13 @@ export const TOOLS: Tool[] = [
   {
     slug: "background-remover",
     category: "design",
-    name: "Cutout Brief",
-    blurb: "Prep specs for clean product cutouts.",
-    fields: [TEXTAREA("image", "Describe the image", "e.g. a sneaker on a cluttered desk"), SELECT("use", "Final use", ["E-commerce white bg", "Transparent PNG", "Lifestyle composite"])],
-    instruction: "Create cutout & background guidance for the image below.",
-    system:
-      "You are a photo retoucher. Describe how to cut out the subject cleanly, edge/shadow handling, the ideal replacement background, and export settings for the stated use.",
+    name: "Background Remover",
+    blurb: "Remove image backgrounds and download a transparent PNG.",
+    isBackgroundRemovalTool: true,
+    fields: [],
+    instruction: "Remove the image background.",
+    system: "",
+    resource: { label: "Open-source project · MIT", href: "https://github.com/nadermx/backgroundremover" },
   },
   {
     slug: "image-generator",

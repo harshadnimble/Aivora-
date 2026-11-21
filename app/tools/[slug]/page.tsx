@@ -9,6 +9,7 @@ import ImageToolRunner from "@/components/ImageToolRunner";
 import VideoToolRunner from "@/components/VideoToolRunner";
 import VideoCaptionToolRunner from "@/components/VideoCaptionToolRunner";
 import UpscaleToolRunner from "@/components/UpscaleToolRunner";
+import BackgroundRemovalToolRunner from "@/components/BackgroundRemovalToolRunner";
 import JsonLd from "@/components/JsonLd";
 import { SITE } from "@/lib/site";
 
@@ -133,7 +134,9 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
         </div>
       </div>
 
-      {tool.isUpscaleTool ? (
+      {tool.isBackgroundRemovalTool ? (
+        <BackgroundRemovalToolRunner />
+      ) : tool.isUpscaleTool ? (
         <UpscaleToolRunner />
       ) : tool.isVideoTool ? (
         <VideoToolRunner tool={tool} />
