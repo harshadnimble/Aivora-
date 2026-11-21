@@ -49,6 +49,8 @@ export interface Tool {
   isUpscaleTool?: boolean;
   /** if true, renders the local BackgroundRemover integration */
   isBackgroundRemovalTool?: boolean;
+  /** if true, renders the interactive font pairing studio */
+  isFontPairingTool?: boolean;
 }
 
 export const CATEGORIES: Category[] = [
@@ -726,12 +728,13 @@ export const TOOLS: Tool[] = [
     slug: "font-pairing-tool",
     category: "design",
     name: "Font Pairing Tool",
-    blurb: "Heading + body font combinations.",
+    blurb: "Preview and copy expressive heading + body font pairings.",
     isNew: true,
-    fields: [TEXT("project", "Project / vibe", "e.g. editorial fashion blog"), SELECT("source", "Source", ["Google Fonts", "System fonts", "Any"])],
-    instruction: "Recommend font pairings for the project below.",
-    system:
-      "You are a typographer. Recommend 4 heading+body pairings with rationale, suggested weights/sizes, and a CSS `font-family` snippet for each.",
+    isFontPairingTool: true,
+    fields: [],
+    instruction: "Explore typographic pairings for your project.",
+    system: "",
+    resource: { label: "Browse Google Fonts", href: "https://fonts.google.com" },
   },
   {
     slug: "ui-wireframe-generator",

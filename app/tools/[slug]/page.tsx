@@ -10,6 +10,7 @@ import VideoToolRunner from "@/components/VideoToolRunner";
 import VideoCaptionToolRunner from "@/components/VideoCaptionToolRunner";
 import UpscaleToolRunner from "@/components/UpscaleToolRunner";
 import BackgroundRemovalToolRunner from "@/components/BackgroundRemovalToolRunner";
+import FontPairingToolRunner from "@/components/FontPairingToolRunner";
 import JsonLd from "@/components/JsonLd";
 import { SITE } from "@/lib/site";
 
@@ -21,7 +22,9 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
   const tool = getTool(params.slug);
   if (!tool) return { title: "Tool not found" };
   const url = `${SITE.url}/tools/${tool.slug}`;
-  const description = `${tool.blurb} Free ${tool.name.toLowerCase()} powered by AI — run it in your browser on ${SITE.name}.`;
+  const description = tool.isFontPairingTool
+    ? `${tool.blurb} Free interactive font pairing tool on ${SITE.name}.`
+    : `${tool.blurb} Free ${tool.name.toLowerCase()} powered by AI — run it in your browser on ${SITE.name}.`;
   return {
     title: tool.name,
     description,
@@ -134,7 +137,9 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
         </div>
       </div>
 
-      {tool.isBackgroundRemovalTool ? (
+      {tool.isFontPairingTool ? (
+        <FontPairingToolRunner />
+      ) : tool.isBackgroundRemovalTool ? (
         <BackgroundRemovalToolRunner />
       ) : tool.isUpscaleTool ? (
         <UpscaleToolRunner />
