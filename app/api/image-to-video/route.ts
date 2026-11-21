@@ -85,6 +85,7 @@ export async function POST(req: Request) {
   try {
     const submission = client.submit("/generate_video", {
       input_image: handle_file(imageBuffer),
+      last_image: null,
       prompt,
       negative_prompt: negativePrompt,
       num_frames: numFrames,
