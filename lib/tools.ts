@@ -629,7 +629,7 @@ export const TOOLS: Tool[] = [
     fields: [],
     instruction: "Remove the image background.",
     system: "",
-    resource: { label: "Open-source project · MIT", href: "https://github.com/nadermx/backgroundremover" },
+    resource: { label: "Open-source inference · Apache 2.0", href: "https://github.com/huggingface/transformers.js" },
   },
   {
     slug: "image-generator",

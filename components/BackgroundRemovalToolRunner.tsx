@@ -1,31 +1,50 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Download, ImagePlus, Loader2, Scissors } from "lucide-react";
 
-function readAsDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error("Could not read this image."));
-    reader.readAsDataURL(file);
-  });
+type BackgroundRemovalPipeline = (image: string) => Promise<Array<{ toBlob: () => Promise<Blob> }>>;
+
+const runners = new Map<string, Promise<BackgroundRemovalPipeline>>();
+
+function getRunner(device: "webgpu" | "wasm") {
+  let runner = runners.get(device);
+  if (!runner) {
+    runner = import("@huggingface/transformers").then(async ({ pipeline }) =>
+      await pipeline("background-removal", "Xenova/modnet", { device }) as unknown as BackgroundRemovalPipeline,
+    );
+    runners.set(device, runner);
+    runner.catch(() => runners.delete(device));
+  }
+  return runner;
 }
 
 export default function BackgroundRemovalToolRunner() {
   const inputRef = useRef<HTMLInputElement>(null);
+  const previewUrl = useRef("");
+  const resultUrl = useRef("");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState("");
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => () => {
+    if (previewUrl.current) URL.revokeObjectURL(previewUrl.current);
+    if (resultUrl.current) URL.revokeObjectURL(resultUrl.current);
+  }, []);
 
   function chooseImage(next?: File) {
     if (!next) return;
     if (!/^image\/(png|jpeg|webp)$/.test(next.type)) return setError("Choose a PNG, JPEG, or WebP image.");
     if (next.size > 10 * 1024 * 1024) return setError("Keep the image under 10 MB.");
     setFile(next);
-    setPreview(URL.createObjectURL(next));
+    if (previewUrl.current) URL.revokeObjectURL(previewUrl.current);
+    previewUrl.current = URL.createObjectURL(next);
+    setPreview(previewUrl.current);
+    if (resultUrl.current) URL.revokeObjectURL(resultUrl.current);
+    resultUrl.current = "";
     setResult("");
     setError("");
   }
@@ -33,20 +52,27 @@ export default function BackgroundRemovalToolRunner() {
   async function removeBackground() {
     if (!file) return setError("Upload an image first.");
     setLoading(true);
+    setLoadingStep("Loading the background removal model…");
     setError("");
     try {
-      const response = await fetch("/api/background-remover", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: await readAsDataUrl(file) }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Background removal failed.");
-      setResult(data.image);
+      let output: Array<{ toBlob: () => Promise<Blob> }>;
+      try {
+        const run = await getRunner("webgpu");
+        setLoadingStep("Removing the background on your device…");
+        output = await run(preview);
+      } catch {
+        const run = await getRunner("wasm");
+        setLoadingStep("Removing the background on your device…");
+        output = await run(preview);
+      }
+      if (!output[0]) throw new Error("The model returned no image. Try another photo.");
+      resultUrl.current = URL.createObjectURL(await output[0].toBlob());
+      setResult(resultUrl.current);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not remove the background.");
+      setError(e instanceof Error ? e.message : "Could not load the free model. Check your connection and try again.");
     } finally {
       setLoading(false);
+      setLoadingStep("");
     }
   }
 
@@ -61,9 +87,9 @@ export default function BackgroundRemovalToolRunner() {
         <button type="button" onClick={removeBackground} disabled={loading || !file} className="btn-ink mt-4 inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold disabled:opacity-60">
           {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Removing background…</> : <><Scissors className="h-4 w-4" /> Remove background</>}
         </button>
-        {loading && <p className="mt-3 text-sm text-[var(--muted)]">The first run may take longer while the AI model downloads.</p>}
+        {loading && <p className="mt-3 text-sm text-[var(--muted)]">{loadingStep} The first run downloads the model; later runs use the browser cache.</p>}
         {error && <p role="alert" className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 ring-1 ring-rose-100">{error}</p>}
-        <p className="mt-4 text-xs text-[var(--faint)]">Processing uses WaveSpeed and may incur provider charges. Configure WAVESPEED_API_KEY on the server.</p>
+        <p className="mt-4 text-xs text-[var(--faint)]">Free, private processing runs in your browser. Your image is not uploaded. The first use downloads the model.</p>
       </section>
       <section className="card flex min-h-80 flex-col p-5 sm:p-6">
         <div className="mb-3 flex items-center justify-between"><p className="eyebrow">Transparent result</p>{result && <a href={result} download="background-removed.png" className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-strong)] px-3 py-1.5 text-xs font-medium"><Download className="h-3.5 w-3.5" /> Download PNG</a>}</div>

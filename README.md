@@ -28,7 +28,7 @@ Get an API key at https://platform.claude.com.
 
 ### Background Remover
 
-The Background Remover uses WaveSpeed's image-background-remover endpoint, so it works on the Node.js deployment without a local Python/PyTorch runtime. Set `WAVESPEED_API_KEY` in the server environment. Each request may incur WaveSpeed usage charges.
+The Background Remover runs in the user's browser with Hugging Face Transformers.js and the Apache-2.0 `Xenova/modnet` model. It needs no API key or paid inference service; images stay on the device. The first use downloads model files from Hugging Face, which the browser then caches. The model is designed for portraits. The originally linked [nadermx/backgroundremover](https://github.com/nadermx/backgroundremover) is a free MIT-licensed Python CLI, but Vercel's Node runtime cannot run its PyTorch CLI directly.
 
 ### Model
 
