@@ -585,7 +585,7 @@ export const TOOLS: Tool[] = [
     slug: "ai-image-generator",
     category: "design",
     name: "AI Image Generator",
-    blurb: "Generate real images from a text description — free, no sign-up needed.",
+    blurb: "Generate original images from a text description.",
     isImageTool: true,
     fields: [
       TEXTAREA("prompt", "Describe the image", "e.g. a glowing cyberpunk city at night, neon reflections on wet streets", 4),
