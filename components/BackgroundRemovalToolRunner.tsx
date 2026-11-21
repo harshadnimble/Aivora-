@@ -3,6 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import { Download, ImagePlus, Loader2, Scissors } from "lucide-react";
 
+const MODELS = [
+  { id: "isnet-general-use", name: "ISNet · balanced" },
+  { id: "u2net", name: "U²-Net · classic" },
+  { id: "u2net_human_seg", name: "U²-Net · people" },
+  { id: "birefnet-general-lite", name: "BiRefNet · lite" },
+  { id: "birefnet-general", name: "BiRefNet · highest detail" },
+  { id: "birefnet-portrait", name: "BiRefNet · portrait" },
+];
+
 export default function BackgroundRemovalToolRunner() {
   const inputRef = useRef<HTMLInputElement>(null);
   const previewUrl = useRef("");
@@ -12,6 +21,7 @@ export default function BackgroundRemovalToolRunner() {
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState("");
+  const [model, setModel] = useState(MODELS[0].id);
   const [error, setError] = useState("");
 
   useEffect(() => () => {
@@ -36,17 +46,19 @@ export default function BackgroundRemovalToolRunner() {
   async function removeBackground() {
     if (!file) return setError("Upload an image first.");
     setLoading(true);
-    setLoadingStep("Loading the rembg model…");
+    setLoadingStep(`Loading ${MODELS.find((option) => option.id === model)?.name ?? "rembg model"}…`);
     setError("");
     try {
       const response = await fetch("/api/background-remover", {
         method: "POST",
-        headers: { "Content-Type": file.type },
+        headers: { "Content-Type": file.type, "X-Background-Model": model },
         body: file,
       });
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || "Background removal failed. Please try again.");
+        if (data.error) throw new Error(data.error);
+        if (response.status === 404) throw new Error("The rembg function is not deployed on this Vercel release. Redeploy the latest main commit.");
+        throw new Error(`The rembg function returned HTTP ${response.status}. Check the Vercel function logs.`);
       }
       resultUrl.current = URL.createObjectURL(await response.blob());
       setResult(resultUrl.current);
@@ -69,9 +81,13 @@ export default function BackgroundRemovalToolRunner() {
         <button type="button" onClick={removeBackground} disabled={loading || !file} className="btn-ink mt-4 inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold disabled:opacity-60">
           {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Removing background…</> : <><Scissors className="h-4 w-4" /> Remove background</>}
         </button>
+        <label htmlFor="rembg-model" className="mb-1.5 mt-5 block text-sm font-medium">Removal model</label>
+        <select id="rembg-model" value={model} onChange={(event) => setModel(event.target.value)} disabled={loading} className="field w-full px-3.5 py-2.5 text-sm">
+          {MODELS.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
+        </select>
         {loading && <p className="mt-3 text-sm text-[var(--muted)]">{loadingStep} The first run may take longer while rembg downloads its model.</p>}
         {error && <p role="alert" className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 ring-1 ring-rose-100">{error}</p>}
-        <p className="mt-4 text-xs text-[var(--faint)]">Runs the open-source rembg CPU model on the server. No paid AI API key is needed.</p>
+        <p className="mt-4 text-xs text-[var(--faint)]">Uses the open-source models featured in Remove Background Local. Processing runs on the server; no paid AI API key is needed.</p>
       </section>
       <section className="card flex min-h-80 flex-col p-5 sm:p-6">
         <div className="mb-3 flex items-center justify-between"><p className="eyebrow">Transparent result</p>{result && <a href={result} download="background-removed.png" className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-strong)] px-3 py-1.5 text-xs font-medium"><Download className="h-3.5 w-3.5" /> Download PNG</a>}</div>

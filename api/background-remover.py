@@ -14,14 +14,13 @@ MAX_OUTPUT_BYTES = 4 * 1024 * 1024
 MAX_INPUT_PIXELS = 45_000_000
 MAX_SIDE = 3000
 
-_session = None
+_sessions = {}
 
 
-def get_session():
-    global _session
-    if _session is None:
-        _session = new_session("u2net")
-    return _session
+def get_session(model):
+    if model not in _sessions:
+        _sessions[model] = new_session(model)
+    return _sessions[model]
 
 
 class handler(BaseHTTPRequestHandler):
@@ -40,6 +39,18 @@ class handler(BaseHTTPRequestHandler):
         content_type = self.headers.get("Content-Type", "").split(";", 1)[0].strip().lower()
         if content_type not in ("image/png", "image/jpeg", "image/webp"):
             return self._json(415, "Upload a PNG, JPEG, or WebP image.")
+
+        model = self.headers.get("X-Background-Model", "isnet-general-use")
+        allowed_models = {
+            "isnet-general-use",
+            "u2net",
+            "u2net_human_seg",
+            "birefnet-general-lite",
+            "birefnet-general",
+            "birefnet-portrait",
+        }
+        if model not in allowed_models:
+            return self._json(400, "Choose a supported background removal model.")
 
         try:
             length = int(self.headers.get("Content-Length", "0"))
@@ -63,7 +74,7 @@ class handler(BaseHTTPRequestHandler):
                 normalized = io.BytesIO()
                 image.save(normalized, format="PNG", optimize=True)
 
-            output = remove(normalized.getvalue(), session=get_session(), force_return_bytes=True)
+            output = remove(normalized.getvalue(), session=get_session(model), force_return_bytes=True)
             with Image.open(io.BytesIO(output)) as cutout:
                 cutout = cutout.convert("RGBA")
                 while True:

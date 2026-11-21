@@ -631,7 +631,7 @@ export const TOOLS: Tool[] = [
     fields: [],
     instruction: "Remove the image background.",
     system: "",
-    resource: { label: "Open-source project · MIT", href: "https://github.com/danielgatis/rembg" },
+    resource: { label: "Open-source project · MIT", href: "https://github.com/tecnomanu/remove-background-local" },
   },
   {
     slug: "image-generator",

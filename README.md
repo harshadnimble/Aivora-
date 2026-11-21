@@ -28,7 +28,7 @@ Get an API key at https://platform.claude.com.
 
 ### Background Remover
 
-The Background Remover runs [danielgatis/rembg](https://github.com/danielgatis/rembg) in a Vercel Python function using its CPU backend. `requirements.txt` installs the MIT-licensed project, and `.python-version` selects Python 3.12. It needs no paid inference API key. The first request downloads rembg's U2-Net model and may take longer; the model is cached in the function's temporary directory while that instance stays warm. Requests are limited to 4 MB to fit the serverless function payload limit. Vercel's function usage and duration limits still apply.
+The Background Remover uses the CPU models featured by [tecnomanu/remove-background-local](https://github.com/tecnomanu/remove-background-local), through its `rembg` inference backend. `requirements.txt` installs the Python dependency and `.python-version` selects Python 3.12. It needs no paid inference API key. The first request for a model downloads its weights and may take longer; weights are cached in the function's temporary directory while that instance stays warm. Requests are limited to 4 MB to fit the serverless function payload limit. Vercel's function usage and duration limits still apply.
 
 ### Model
 
