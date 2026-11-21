@@ -83,7 +83,7 @@ export async function POST(req: Request) {
   updateStatus(jobId, "Connected — submitting your image…");
 
   try {
-    const submission = client.submit("/predict", {
+    const submission = client.submit("/generate_video", {
       image: handle_file(imageBuffer),
       prompt,
       negative_prompt: negativePrompt,
