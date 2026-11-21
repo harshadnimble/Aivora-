@@ -6,6 +6,7 @@ import { TOOLS, getTool, getCategory, toolsByCategory } from "@/lib/tools";
 import { categoryIcon } from "@/lib/icons";
 import ToolRunner from "@/components/ToolRunner";
 import ImageToolRunner from "@/components/ImageToolRunner";
+import VideoCaptionToolRunner from "@/components/VideoCaptionToolRunner";
 import JsonLd from "@/components/JsonLd";
 import { SITE } from "@/lib/site";
 
@@ -122,6 +123,8 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
 
       {tool.isImageTool ? (
         <ImageToolRunner tool={tool} />
+      ) : tool.isEmbeddedTool ? (
+        <VideoCaptionToolRunner />
       ) : (
         <ToolRunner tool={tool} />
       )}

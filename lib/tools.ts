@@ -40,6 +40,8 @@ export interface Tool {
   isNew?: boolean;
   /** if true, this tool generates images instead of text */
   isImageTool?: boolean;
+  /** if true, this tool renders its own standalone UI */
+  isEmbeddedTool?: boolean;
 }
 
 export const CATEGORIES: Category[] = [
@@ -839,6 +841,17 @@ export const TOOLS: Tool[] = [
     instruction: "Convert the transcript below into subtitle format.",
     system:
       "You format subtitles. Break the transcript into short caption lines (max ~7 words) and output valid SRT with sequential numbers and placeholder timestamps in a fenced block.",
+  },
+  {
+    slug: "video-caption-generator",
+    category: "video",
+    name: "Video Caption Generator",
+    blurb: "Create, style, and export captions for your videos.",
+    isNew: true,
+    isEmbeddedTool: true,
+    fields: [],
+    instruction: "Create and style captions for a video.",
+    system: "Use the interactive video caption editor to transcribe, style, and export captions.",
   },
 
   // ===================== E-COMMERCE =====================
