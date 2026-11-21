@@ -41,6 +41,8 @@ export interface Tool {
   isNew?: boolean;
   /** if true, this tool generates images instead of text */
   isImageTool?: boolean;
+  /** if true, this tool generates video from an image */
+  isVideoTool?: boolean;
   /** if true, this tool renders its own standalone UI */
   isEmbeddedTool?: boolean;
   /** if true, renders the dedicated image upscaler */
@@ -763,6 +765,17 @@ export const TOOLS: Tool[] = [
   },
 
   // ===================== VIDEO =====================
+  {
+    slug: "image-to-video",
+    category: "video",
+    name: "AI Image to Video",
+    blurb: "Animate any image into a short video clip using Wan2.2 — free, no sign-up.",
+    isNew: true,
+    isVideoTool: true,
+    fields: [],
+    instruction: "",
+    system: "",
+  },
   {
     slug: "minimal-template",
     category: "video",

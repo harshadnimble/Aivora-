@@ -6,6 +6,7 @@ import { TOOLS, getTool, getCategory, toolsByCategory } from "@/lib/tools";
 import { categoryIcon } from "@/lib/icons";
 import ToolRunner from "@/components/ToolRunner";
 import ImageToolRunner from "@/components/ImageToolRunner";
+import VideoToolRunner from "@/components/VideoToolRunner";
 import VideoCaptionToolRunner from "@/components/VideoCaptionToolRunner";
 import UpscaleToolRunner from "@/components/UpscaleToolRunner";
 import JsonLd from "@/components/JsonLd";
@@ -134,6 +135,8 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
 
       {tool.isUpscaleTool ? (
         <UpscaleToolRunner />
+      ) : tool.isVideoTool ? (
+        <VideoToolRunner tool={tool} />
       ) : tool.isImageTool ? (
         <ImageToolRunner tool={tool} />
       ) : tool.isEmbeddedTool ? (
