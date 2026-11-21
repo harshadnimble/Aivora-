@@ -28,7 +28,7 @@ Get an API key at https://platform.claude.com.
 
 ### Background Remover
 
-The Background Remover runs in the user's browser with Hugging Face Transformers.js and the Apache-2.0 `Xenova/modnet` model. It needs no API key or paid inference service; images stay on the device. The first use downloads model files from Hugging Face, which the browser then caches. The model is designed for portraits. The originally linked [nadermx/backgroundremover](https://github.com/nadermx/backgroundremover) is a free MIT-licensed Python CLI, but Vercel's Node runtime cannot run its PyTorch CLI directly.
+The Background Remover runs [danielgatis/rembg](https://github.com/danielgatis/rembg) in a Vercel Python function using its CPU backend. `requirements.txt` installs the MIT-licensed project, and `.python-version` selects Python 3.12. It needs no paid inference API key. The first request downloads rembg's U2-Net model and may take longer; the model is cached in the function's temporary directory while that instance stays warm. Requests are limited to 4 MB to fit the serverless function payload limit. Vercel's function usage and duration limits still apply.
 
 ### Model
 
