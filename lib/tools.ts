@@ -38,6 +38,8 @@ export interface Tool {
   /** short instruction prepended to the user's inputs */
   instruction: string;
   isNew?: boolean;
+  /** if true, this tool generates images instead of text */
+  isImageTool?: boolean;
 }
 
 export const CATEGORIES: Category[] = [
@@ -579,6 +581,21 @@ export const TOOLS: Tool[] = [
   },
 
   // ===================== DESIGN =====================
+  {
+    slug: "ai-image-generator",
+    category: "design",
+    name: "AI Image Generator",
+    blurb: "Generate real images from a text description — free, no sign-up needed.",
+    isNew: true,
+    isImageTool: true,
+    fields: [
+      TEXTAREA("prompt", "Describe the image", "e.g. a glowing cyberpunk city at night, neon reflections on wet streets", 4),
+      SELECT("style", "Style", ["Photorealistic", "Digital art", "Oil painting", "Watercolor", "Anime", "Cinematic", "Minimal", "3D render"]),
+      SELECT("ratio", "Aspect ratio", ["1:1 (Square)", "16:9 (Landscape)", "9:16 (Portrait)", "4:3 (Classic)"]),
+    ],
+    instruction: "Generate an image based on the description below.",
+    system: "You generate images. Use the prompt and style as provided.",
+  },
   {
     slug: "background-remover",
     category: "design",

@@ -5,6 +5,7 @@ import { ChevronLeft, ArrowRight } from "lucide-react";
 import { TOOLS, getTool, getCategory, toolsByCategory } from "@/lib/tools";
 import { categoryIcon } from "@/lib/icons";
 import ToolRunner from "@/components/ToolRunner";
+import ImageToolRunner from "@/components/ImageToolRunner";
 import JsonLd from "@/components/JsonLd";
 import { SITE } from "@/lib/site";
 
@@ -119,7 +120,11 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
         </div>
       </div>
 
-      <ToolRunner tool={tool} />
+      {tool.isImageTool ? (
+        <ImageToolRunner tool={tool} />
+      ) : (
+        <ToolRunner tool={tool} />
+      )}
 
       {/* related */}
       {related.length > 0 && (
