@@ -35,6 +35,7 @@ export interface Tool {
   fields: Field[];
   /** system prompt that turns generic Claude into this specific tool */
   system: string;
+  resource?: { label: string; href: string };
   /** short instruction prepended to the user's inputs */
   instruction: string;
   isNew?: boolean;
@@ -318,11 +319,15 @@ export const TOOLS: Tool[] = [
     slug: "image-to-code",
     category: "web-developer",
     name: "Image → Code (describe)",
-    blurb: "Describe a UI, get the markup that builds it.",
-    fields: [TEXTAREA("ui", "Describe the UI", "e.g. a pricing section with 3 cards and a toggle"), SELECT("stack", "Output", ["React + Tailwind", "HTML + Tailwind", "HTML + CSS"])],
-    instruction: "Generate front-end code for the UI described below.",
+    blurb: "Describe a UI or 3D object and get the code that builds it.",
+    fields: [TEXTAREA("ui", "Describe the UI or object", "e.g. a pricing section with 3 cards and a toggle, or a low-poly desk lamp with a hinged arm"), SELECT("stack", "Output", ["React + Tailwind", "HTML + Tailwind", "HTML + CSS", "Procedural Three.js (img2threejs)"])],
+    instruction: "Generate code for the requested UI or object from the description below.",
     system:
-      "You are a front-end engineer. Output responsive, accessible code in a single fenced block. Use semantic HTML and sensible defaults.",
+      "You are a front-end engineer. Return one runnable fenced code block. For React or HTML UI output, use responsive, accessible semantic markup and sensible defaults. If Output is 'Procedural Three.js (img2threejs)', treat the description as a visual reference brief: identify the object's silhouette and defining details, decompose it into named parts, and generate a self-contained HTML page using Three.js procedural geometry and materials, camera, lighting, OrbitControls, responsive resizing, and a render loop. Use a meaningful group hierarchy and pivots for movable parts. Do not use downloaded meshes or photogrammetry. Clearly comment on inferred or hidden features; do not claim exact likeness from a text description.",
+    resource: {
+      label: "Explore the img2threejs workflow",
+      href: "https://github.com/img2threejs/img2threejs",
+    },
   },
   {
     slug: "landing-page-generator",

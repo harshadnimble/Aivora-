@@ -118,6 +118,16 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
             )}
           </div>
           <p className="max-w-2xl text-[var(--muted)]">{tool.blurb}</p>
+          {tool.resource && (
+            <a
+              href={tool.resource.href}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-[var(--accent)] hover:underline"
+            >
+              {tool.resource.label} <ArrowRight className="h-3.5 w-3.5" />
+            </a>
+          )}
         </div>
       </div>
 
