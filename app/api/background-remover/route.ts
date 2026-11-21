@@ -1,5 +1,6 @@
 import { execFile } from "node:child_process";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
@@ -23,7 +24,8 @@ export async function POST(req: Request) {
   const outputPath = path.join(workDir, "output.png");
   try {
     await writeFile(inputPath, input);
-    const python = process.env.PYTHON_BIN || "python3";
+    const projectPython = path.resolve(process.cwd(), ".venv", "bin", "python");
+    const python = process.env.PYTHON_BIN || (existsSync(projectPython) ? projectPython : "python3");
     await execFileAsync(python, ["-m", "backgroundremover.cmd.cli", "-i", inputPath, "-o", outputPath], { timeout: 270_000, maxBuffer: 2 * 1024 * 1024 });
     const output = await readFile(outputPath);
     if (!output.length || output.length > 25 * 1024 * 1024) return Response.json({ error: "The processed image is empty or too large." }, { status: 502 });
