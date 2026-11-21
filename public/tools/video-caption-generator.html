@@ -6434,6 +6434,7 @@ async function transcribeShruti(){
 }
 async function transcribe(){
   var key=$("key").value.trim();
+  if(!key){try{key=localStorage.getItem("nova_ai_key")||localStorage.getItem("gk")||""}catch(e){}}
   if(!file)return msg("Choose a video or audio file first.");
   if($("model").value=="captain-offline"){
     $("go").disabled=true;
@@ -6455,7 +6456,7 @@ async function transcribe(){
       var isoMap={"captain marathi":"mr","marathi":"mr","captain gujarati":"gu","gujarati":"gu","captain tamil":"ta","tamil":"ta","captain telugu":"te","telugu":"te","captain bengali":"bn","bengali":"bn","captain kannada":"kn","kannada":"kn","captain malayalam":"ml","malayalam":"ml","captain punjabi":"pa","punjabi":"pa","captain urdu":"ur","urdu":"ur","captain odia":"or","odia":"or","captain nepali":"ne","nepali":"ne","captain assamese":"as","assamese":"as"};
       var targetLang=isoMap[lang.toLowerCase()]||lang;
       if(lang=="hinglish"){fd.append("language","hi");fd.append("prompt",HP)}else fd.append("language",targetLang);if(window.__v3Prompt){var v3p=window.__v3Prompt();if(v3p){fd.delete("prompt");fd.append("prompt",((lang=="hinglish"?HP+" ":"")+v3p).slice(0,880))}}
-      var r=await fetch("https://api.groq.com/openai/v1/audio/transcriptions",{method:"POST",headers:{Authorization:"Bearer "+key},body:fd});
+      var r=await fetch("/api/transcribe",{method:"POST",headers:{"x-ai-key":key},body:fd});
       if(!r.ok){var e=await r.json().catch(function(){return{}});throw new Error((e.error&&e.error.message)||("Groq error "+r.status))}
       var j=await r.json();
       (j.words||[]).forEach(function(w){var t=(w.word||"").trim();if(t)words.push({t:t,s:w.start+parts[i].off,e:w.end+parts[i].off})});
@@ -22185,7 +22186,7 @@ seg.addEventListener("click",function(){setTimeout(u,0)});u()})()</script>
           }
         } else {
           /* Online (Groq) */
-          var key = (document.getElementById("key") && document.getElementById("key").value.trim()) || (function(){ try{ return localStorage.getItem("gk") || ""; }catch(e){ return ""; } })();
+          var key = (document.getElementById("key") && document.getElementById("key").value.trim()) || (function(){ try{ return localStorage.getItem("nova_ai_key") || localStorage.getItem("gk") || ""; }catch(e){ return ""; } })();
           if(!key){
             /* Pre-cache audio decoding silently so transcription starts instantly when key is given */
             report("Reading audio track…", 10);
@@ -22234,9 +22235,9 @@ seg.addEventListener("click",function(){setTimeout(u,0)});u()})()</script>
               fd.append("language", targetIso);
             }
 
-            var res = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+            var res = await fetch("/api/transcribe", {
               method: "POST",
-              headers: { "Authorization": "Bearer " + key },
+              headers: { "x-ai-key": key },
               body: fd
             });
             if(job.cancelled) return null;

@@ -1,10 +1,10 @@
 export default function VideoCaptionToolRunner() {
   return (
-    <div className="card overflow-hidden p-0" style={{ height: "calc(100vh - 16rem)", minHeight: 720 }}>
+    <div className="fixed inset-0 z-[60] overflow-hidden bg-black">
       <iframe
         src="/tools/video-caption-generator.html"
         title="Video Caption Generator"
-        className="h-full w-full border-0"
+        className="h-screen w-screen border-0"
         allow="clipboard-read; clipboard-write"
       />
     </div>
