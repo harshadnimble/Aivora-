@@ -48,7 +48,6 @@ export default function ImageToolRunner({ tool }: { tool: Tool }) {
   const [qwenWidth, setQwenWidth] = useState(1024);
   const [qwenHeight, setQwenHeight] = useState(1024);
   const [negativePrompt, setNegativePrompt] = useState("");
-  const [nonCommercialConfirmed, setNonCommercialConfirmed] = useState(false);
   const [referenceFiles, setReferenceFiles] = useState<File[]>([]);
   const [showSettings, setShowSettings] = useState(false);
 
@@ -73,11 +72,6 @@ export default function ImageToolRunner({ tool }: { tool: Tool }) {
       setError("Please describe the image you want to generate.");
       return;
     }
-    if (!nonCommercialConfirmed) {
-      setError("Please confirm personal, non-commercial testing before generating.");
-      return;
-    }
-
     setLoading(true);
     setStatusMsg("Connecting to Qwen Space…");
 
@@ -95,7 +89,7 @@ export default function ImageToolRunner({ tool }: { tool: Tool }) {
       width: qwenWidth,
       height: qwenHeight,
       negativePrompt,
-      nonCommercialConfirmed,
+      nonCommercialConfirmed: true,
       images: await Promise.all(referenceFiles.map(fileToDataUrl)),
     };
 
@@ -336,23 +330,6 @@ export default function ImageToolRunner({ tool }: { tool: Tool }) {
                 </div>
               </div>
             )}
-          </div>
-
-          {/* Non-commercial confirm */}
-          <div className="mb-4 rounded-lg bg-amber-50 px-3 py-2.5 ring-1 ring-amber-100">
-            <p className="mb-2 text-xs text-amber-700">
-              Powered by the public Qwen Image 2.1 Hugging Face Space — free, experimental.
-              For personal testing only until a commercial Qwen license is obtained.
-            </p>
-            <label className="flex cursor-pointer items-center gap-2 text-xs font-medium text-amber-800">
-              <input
-                type="checkbox"
-                checked={nonCommercialConfirmed}
-                onChange={(e) => setNonCommercialConfirmed(e.target.checked)}
-                className="accent-amber-600"
-              />
-              I confirm I&apos;m using this for personal, non-commercial testing.
-            </label>
           </div>
 
           {/* Generate / Reset */}
