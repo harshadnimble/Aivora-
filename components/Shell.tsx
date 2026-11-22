@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Menu, X, Sparkles, ArrowUpRight } from "lucide-react";
+import { LayoutGrid, Menu, X, Sparkles, ArrowUpRight, Gamepad2 } from "lucide-react";
 import { CATEGORIES } from "@/lib/tools";
 import { categoryIcon } from "@/lib/icons";
 import SearchBox from "@/components/SearchBox";
@@ -45,6 +45,23 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
         <LayoutGrid className="h-[18px] w-[18px]" strokeWidth={1.75} />
         All tools
       </Link>
+
+      <a
+        href="https://destroy.spritefusion.com/"
+        target="_blank"
+        rel="noreferrer"
+        onClick={(event) => {
+          event.preventDefault();
+          const gameUrl = new URL("https://destroy.spritefusion.com/");
+          gameUrl.searchParams.set("from", "badge");
+          gameUrl.searchParams.set("url", window.location.origin);
+          window.open(gameUrl.toString(), "_blank", "noopener,noreferrer");
+        }}
+        className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[var(--muted)] transition-colors hover:bg-black/[0.04] hover:text-[var(--ink)]"
+      >
+        <Gamepad2 className="h-[18px] w-[18px]" strokeWidth={1.75} />
+        Take a break
+      </a>
 
       <p className="eyebrow mt-5 mb-1.5 px-3">Categories</p>
 
